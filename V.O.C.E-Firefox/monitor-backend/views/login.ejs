@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitle %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .form-input {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            border: 1px solid rgb(209 213 219);
+            border-radius: 0.375rem;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            transition: all 200ms;
+            color: rgb(31 41 55);
+        }
+        .form-input:focus {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            border-color: rgb(220 38 38);
+            --tw-ring-color: rgb(220 38 38);
+            box-shadow: 0 0 0 2px var(--tw-ring-color);
+        }
+        .btn-danger {
+            display: inline-block;
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.875rem;
+            color: white;
+            background-color: rgb(185 28 28);
+            transition: transform 200ms, background-color 200ms;
+        }
+        .btn-danger:hover {
+            background-color: rgb(153 27 27);
+            transform: scale(1.05);
+        }
+        .btn-danger:focus {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            --tw-ring-offset-shadow: 0 0 0 2px #fff;
+            --tw-ring-shadow: 0 0 0 calc(2px + 2px) rgb(239 68 68);
+            box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), 0 0 #0000;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    <!-- Cabeçalho -->
+    <header class="bg-white shadow-md border-b-2 border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
+            <a href="/"><img src="https://upload.wikimedia.org/wikipedia/commons/8/8c/SENAI_S%C3%A3o_Paulo_logo.png" alt="Logo SENAI" class="h-10"></a>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="flex-grow flex items-center justify-center py-12 px-4">
+        <div class="max-w-md w-full bg-white p-8 rounded-xl shadow-2xl border-t-4 border-red-700">
+            <h2 class="text-center text-2xl font-bold text-gray-900">Acessar o Painel</h2>
+            <p class="mt-2 text-center text-sm text-gray-600">Bem-vindo de volta! Faça o login para continuar.</p>
+
+            <% if (message) { %>
+                <div class="bg-green-100 border border-green-200 rounded-lg p-4 my-4">
+                    <p class="text-sm text-green-700"><%= message %></p>
+                </div>
+            <% } %>
+
+            <form class="mt-8 space-y-6" id="loginForm">
+                <div class="space-y-4">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input id="email" name="email" type="email" required class="mt-1 form-input" placeholder="Digite seu email">
+                    </div>
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
+                        <input id="password" name="password" type="password" required class="mt-1 form-input" placeholder="Digite sua senha">
+                    </div>
+                </div>
+
+                <div id="error-message" class="hidden bg-red-100 border border-red-200 rounded-lg p-4 mt-4">
+                    <p class="text-sm text-red-700"></p>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full py-3 btn-danger uppercase">
+                        Entrar no Sistema
+                    </button>
+                </div>
+                <div class="text-center text-sm mt-4">
+                    <p class="text-gray-600">
+                        Não tem uma conta?
+                        <a href="/cadastro" class="font-medium text-red-700 hover:text-red-800">Cadastre-se!</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="bg-red-700 text-white mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
+            <p>&copy; <%= new Date().getFullYear() %> SENAI - Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDznqrm2kJfKQXxWpgHWwk-msXH89OEgTo",
+            authDomain: "banco-vc.firebaseapp.com",
+            projectId: "banco-vc",
+            storageBucket: "banco-vc.appspot.com",
+            messagingSenderId: "858410245985",
+            appId: "1:858410245985:web:56fae7da4c145c30a32f20"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const form = document.getElementById('loginForm');
+        const errorDiv = document.getElementById('error-message');
+        const errorP = errorDiv.querySelector('p');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorDiv.classList.add('hidden');
+
+            const email = form.email.value;
+            const password = form.password.value;
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const idToken = await userCredential.user.getIdToken();
+
+                const response = await fetch('/sessionLogin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Falha ao criar sessão no servidor.');
+                }
+                
+                window.location.href = '/dashboard';
+
+            } catch (error) {
+                errorP.textContent = 'Email ou senha inválidos.';
+                errorDiv.classList.remove('hidden');
+                console.error("Erro no login:", error);
+            }
+        });
+    </script>
+</body>
+</html>
+

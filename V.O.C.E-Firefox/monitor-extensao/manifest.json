@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Monitor de Atividade para TCC (Firefox)",
+  "version": "1.1",
+  "description": "Monitora o tempo de uso de sites e envia para análise (versão com configuração manual).",
+
+  "permissions": [
+    "tabs",
+    "storage",
+    "alarms"
+  ],
+
+  "host_permissions": [
+    "http://localhost:3000/*"
+  ],
+
+  "background": {
+    "scripts": ["background.js"]
+  },
+
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';"
+  },
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "monitor-tcc@meuprojeto.com"
+    }
+  }
+}

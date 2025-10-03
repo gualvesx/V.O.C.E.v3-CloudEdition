@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitle %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        #notification-container {
+            position: fixed; top: 1rem; right: 1rem; z-index: 1050; width: 350px;
+        }
+        .notification {
+            padding: 1rem; margin-bottom: 1rem; border-radius: 0.5rem; color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); opacity: 0;
+            transform: translateX(100%); animation: slideIn 0.5s forwards;
+        }
+        .notification.success { background-color: #10B981; }
+        .notification.error { background-color: #EF4444; }
+        @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    
+    <div id="notification-container"></div>
+
+    <header class="bg-white shadow-md border-b-2 border-gray-100 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
+            <a href="/"><img src="https://upload.wikimedia.org/wikipedia/commons/8/8c/SENAI_S%C3%A3o_Paulo_logo.png" alt="Logo SENAI" class="h-10"></a>
+            <div class="flex items-center space-x-6">
+                <a href="/perfil" class="text-gray-600 hover:text-red-700 font-semibold transition-colors duration-200 text-sm uppercase tracking-wider">
+                    Meu Perfil
+                </a>
+                <span class="text-gray-300">|</span>
+                <span class="text-gray-700 hidden sm:inline">Bem-vindo, <strong class="text-red-700"><%= professorName %></strong>!</span>
+                <a href="/logout" class="inline-block px-4 py-2 rounded-md font-semibold text-center uppercase tracking-wider text-xs transition-transform duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-700 text-white hover:bg-red-800 focus:ring-red-500">
+                    Sair
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+        <div class="space-y-8">
+            <section class="bg-white rounded-lg shadow-lg p-6 border-t-4 border-red-700">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Gestão de Turmas</h2>
+                <div class="mb-4">
+                    <button id="toggle-create-class-form" class="w-full text-left p-3 bg-gray-200 hover:bg-gray-300 rounded-md font-semibold text-gray-700 transition-colors">
+                        + Adicionar Nova Turma
+                    </button>
+                </div>
+                <div id="create-class-form-container" class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 hidden">
+                    <div class="flex gap-3">
+                        <input type="text" id="newClassName" placeholder="Nome da nova turma" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-red-600 outline-none flex-1">
+                        <button id="createClassBtn" class="inline-block px-6 py-2.5 rounded-md font-semibold text-center uppercase tracking-wider text-sm transition-transform duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-700 text-white hover:bg-red-800 focus:ring-red-500 whitespace-nowrap">Criar Turma</button>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-4 items-end">
+                    <div class="flex-1 w-full">
+                        <label for="classSelect" class="block text-sm font-medium text-gray-700 mb-2">Filtro de Visualização:</label>
+                        <select id="classSelect" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-red-600 outline-none">
+                            <option value="null">Visão Geral (Todos os Alunos)</option>
+                            <% if (classes.length > 0) { %>
+                                <% classes.forEach(cls => { %>
+                                    <option value="<%= cls.id %>"><%= cls.name %></option>
+                                <% }) %>
+                            <% } %>
+                        </select>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="editClassBtn" class="inline-block px-6 py-2.5 rounded-md font-semibold text-center uppercase tracking-wider text-sm transition-transform duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500" disabled>Editar Turma</button>
+                        <button id="deleteClassBtn" class="inline-block px-6 py-2.5 rounded-md font-semibold text-center uppercase tracking-wider text-sm transition-transform duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-700 text-white hover:bg-red-800 focus:ring-red-500" disabled>Remover Turma</button>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="student-management-panel" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white rounded-lg shadow-lg p-6 border-t-4 border-red-700">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Meus Alunos</h3>
+                    <div class="mb-4">
+                        <button id="toggle-add-student-form" class="w-full text-left p-3 bg-red-100 hover:bg-red-200 rounded-md font-semibold text-red-800 transition-colors">
+                            + Adicionar Novo Aluno
+                        </button>
+                    </div>
+                    <div id="add-student-form-container" class="mb-4 p-4 bg-red-50 rounded-lg border border-red-200 hidden">
+                        <form id="addStudentForm" class="space-y-2">
+                           <input type="text" name="fullName" placeholder="Nome completo do aluno" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-red-600 outline-none" required>
+                           <input type="text" name="cpf" placeholder="CPF (opcional)" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-red-600 outline-none">
+                           <input type="text" name="pc_id" placeholder="ID do PC (opcional)" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-red-600 outline-none">
+                           <button type="submit" class="w-full inline-block px-6 py-2.5 rounded-md font-semibold text-center uppercase tracking-wider text-sm transition-transform duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-700 text-white hover:bg-red-800 focus:ring-red-500">Adicionar</button>
+                        </form>
+                    </div>
+                    <div id="all-students-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                </div>
+                <div id="class-students-panel" class="bg-white rounded-lg shadow-lg p-6 border-t-4 border-red-700 hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Alunos na Turma: <span id="class-name-in-list" class="text-red-700"></span></h3>
+                    <p class="text-sm text-gray-500 mb-4">Arraste ou clique no '+' de um aluno para adicioná-lo aqui.</p>
+                    <div id="students-in-class-list" class="space-y-2 min-h-[100px] bg-gray-50 p-2 rounded border-dashed border-2 border-gray-300"></div>
+                </div>
+            </section>
+
+            <div id="dashboard-content" class="space-y-8">
+                <section class="bg-white rounded-lg shadow-lg p-6 border-t-4 border-red-700">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">Resumo de Atividade</h2>
+                    <div class="overflow-x-auto rounded-lg shadow border border-gray-200">
+                        <table class="min-w-full">
+                           <thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome do Aluno</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Bruto</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tempo Total (min)</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registros</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Última Atividade</th></tr></thead>
+                           <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                            <!-- [NOVO] Seção de Filtros de Dados -->
+            <section class="bg-white rounded-lg shadow-lg p-6 border-t-4 border-red-700">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">Filtros de Dados</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                    <div class="lg:col-span-2">
+                        <label for="searchInput" class="block text-sm font-medium text-gray-700">Pesquisar por Aluno/ID/URL</label>
+                        <input type="text" id="searchInput" placeholder="Digite nome, CPF, ID do PC ou URL..." class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-red-600 outline-none">
+                    </div>
+                    <div>
+                        <label for="categoryFilter" class="block text-sm font-medium text-gray-700">Categoria</label>
+                        <select id="categoryFilter" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-red-600 outline-none">
+                            <option value="">Todas as Categorias</option>
+                            <% if (categories.length > 0) { %>
+                                <% categories.forEach(cat => { %>
+                                    <option value="<%= cat %>"><%= cat %></option>
+                                <% }) %>
+                            <% } %>
+                        </select>
+                    </div>
+                    <div class="flex items-center pt-6">
+                        <input id="alertsOnlyCheckbox" type="checkbox" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                        <label for="alertsOnlyCheckbox" class="ml-2 block text-sm text-gray-900">Apenas Alertas</label>
+                    </div>
+                </div>
+                <div class="mt-4 flex gap-3 justify-end">
+                    <button id="resetFilterBtn" class="inline-block px-6 py-2.5 rounded-md font-semibold text-center uppercase tracking-wider text-sm transition-transform duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500">Limpar Filtros</button>
+                    <button id="filterBtn" class="inline-block px-6 py-2.5 rounded-md font-semibold text-center uppercase tracking-wider text-sm transition-transform duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-700 text-white hover:bg-red-800 focus:ring-red-500">Aplicar Filtros</button>
+                </div>
+            </section>
+                
+                <section class="bg-white rounded-lg shadow-lg p-6 border-t-4 border-red-700">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <h2 class="text-xl font-bold text-gray-900">Análise Visual (Top 10 Sites)</h2>
+                        <div class="flex gap-2">
+                            <button class="chart-btn active bg-red-700 text-white px-4 py-1 rounded-md text-sm" data-type="bar">Barras</button>
+                            <button class="chart-btn bg-gray-200 text-gray-700 px-4 py-1 rounded-md text-sm" data-type="pie">Pizza</button>
+                            <button class="chart-btn bg-gray-200 text-gray-700 px-4 py-1 rounded-md text-sm" data-type="doughnut">Rosca</button>
+                        </div>
+                    </div>
+                    <div class="relative h-80 w-full">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </section>
+                
+                <section class="bg-white rounded-lg shadow-lg p-6 border-t-4 border-red-700">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">Logs de Atividade (<span id="logs-count">0</span>)</h2>
+                    <div class="overflow-x-auto rounded-lg shadow border border-gray-200 max-h-[500px] overflow-y-auto">
+                        <table class="min-w-full">
+                           <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aluno</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duração (s)</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoria</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data e Hora</th>
+                                </tr>
+                            </thead>
+                           <tbody id="logsTableBody" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-red-800 text-white mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
+            <p class="text-sm">&copy; <%= new Date().getFullYear() %> SENAI - V.O.C.E. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+    
+    <!-- Modais -->
+    <div id="editClassModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Editar Nome da Turma</h3>
+            <div class="mt-4">
+                <label for="editClassNameInput" class="block text-sm font-medium text-gray-700 mb-2">Novo nome da turma:</label>
+                <input type="text" id="editClassNameInput" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-red-600 outline-none">
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="closeModals()" class="inline-block px-6 py-2.5 rounded-md font-semibold text-center uppercase tracking-wider text-sm transition-transform duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500">Cancelar</button>
+                <button id="saveClassChangesBtn" class="inline-block px-6 py-2.5 rounded-md font-semibold text-center uppercase tracking-wider text-sm transition-transform duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-700 text-white hover:bg-red-800 focus:ring-red-500">Salvar</button>
+            </div>
+        </div>
+    </div>
+    <div id="editStudentModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Editar Dados do Aluno</h3>
+            <div class="space-y-4 mt-4">
+                <div>
+                    <label for="editStudentNameInput" class="block text-sm font-medium text-gray-700 mb-1">Nome Completo:</label>
+                    <input type="text" id="editStudentNameInput" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-red-600 outline-none">
+                </div>
+                <div>
+                    <label for="editStudentCpfInput" class="block text-sm font-medium text-gray-700 mb-1">CPF (Opcional):</label>
+                    <input type="text" id="editStudentCpfInput" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-red-600 outline-none">
+                </div>
+                <div>
+                    <label for="editStudentPcIdInput" class="block text-sm font-medium text-gray-700 mb-1">ID do PC (Opcional):</label>
+                    <input type="text" id="editStudentPcIdInput" class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-red-600 outline-none">
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="closeStudentModal()" class="inline-block px-6 py-2.5 rounded-md font-semibold text-center uppercase tracking-wider text-sm transition-transform duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500">Cancelar</button>
+                <button id="saveStudentChangesBtn" class="inline-block px-6 py-2.5 rounded-md font-semibold text-center uppercase tracking-wider text-sm transition-transform duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-700 text-white hover:bg-red-800 focus:ring-red-500">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+        <!-- Modal para exibir logs de alerta -->
+        <div id="alertLogsModal" class="modal-overlay hidden">
+            <div class="modal-content max-w-3xl">
+                <h3 id="alertLogsTitle" class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Logs de Alerta</h3>
+                <div id="alertLogsContainer" class="max-h-[60vh] overflow-y-auto">
+                    <!-- Conteúdo dos logs será inserido aqui pelo script.js -->
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button onclick="closeAlertLogsModal()" class="inline-block px-6 py-2.5 rounded-md font-semibold text-center uppercase tracking-wider text-sm transition-transform duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500">Fechar</button>
+                </div>
+            </div>
+        </div>
+    
+    <script src="/js/script.js"></script>
+</body>
+</html>

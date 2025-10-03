@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitle %></title>
+    <!-- Script CDN do TailwindCSS - Essencial para o funcionamento dos estilos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos globais mínimos que não são do Tailwind */
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-white flex flex-col min-h-screen">
+
+    <!-- Cabeçalho Padrão SENAI -->
+    <header class="bg-white shadow-md border-b-2 border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
+            <a href="/"><img src="https://upload.wikimedia.org/wikipedia/commons/8/8c/SENAI_S%C3%A3o_Paulo_logo.png" alt="Logo SENAI" class="h-10"></a>
+            
+            <!-- [ALTERADO] Lógica condicional para os botões -->
+            <div class="flex items-center space-x-4">
+                <% if (isLoggedIn) { %>
+                    <a href="/dashboard" class="inline-block px-6 py-2.5 rounded-md font-semibold text-center uppercase tracking-wider text-sm transition-transform duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-700 text-white hover:bg-red-800 focus:ring-red-500">
+                        Acessar Painel
+                    </a>
+                    <a href="/logout" class="text-gray-600 hover:text-red-700 font-semibold transition-colors duration-200 text-sm uppercase tracking-wider">
+                        Sair
+                    </a>
+                <% } else { %>
+                    <a href="/login" class="text-gray-600 hover:text-red-700 font-semibold transition-colors duration-200 text-sm uppercase tracking-wider">
+                        Entrar
+                    </a>
+                    <a href="/cadastro" class="inline-block px-6 py-2.5 rounded-md font-semibold text-center uppercase tracking-wider text-sm transition-transform duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-700 text-white hover:bg-red-800 focus:ring-red-500">
+                        Cadastrar
+                    </a>
+                <% } %>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="flex-grow">
+        <div class="bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
+                <div class="text-center">
+                    <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight tracking-tight">
+                        Monitorização Inteligente para
+                        <span class="block text-red-700 mt-2">
+                            Ambientes Educacionais
+                        </span>
+                    </h1>
+                    <p class="mt-6 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+                        Gerencie laboratórios de informática e salas de aula com ferramentas avançadas de monitorização e análise comportamental.
+                    </p>
+                    <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
+                        <a href="/login" class="inline-block w-full sm:w-auto px-8 py-3 text-base rounded-md font-semibold text-center uppercase tracking-wider transition-transform duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-700 text-white hover:bg-red-800 focus:ring-red-500">
+                            Acessar Painel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- RODAPÉ -->
+    <footer class="bg-red-800 text-white mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
+            <p class="text-sm">&copy; <%= new Date().getFullYear() %> SENAI - Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
+

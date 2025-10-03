@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Monitor de Atividade V.O.C.E (Chrome)",
+  "version": "1.2",
+  "description": "Monitora o tempo de uso de sites e envia para análise.",
+  "permissions": [
+    "tabs",
+    "storage",
+    "alarms",
+    "nativeMessaging"
+  ],
+  "host_permissions": [
+    "http://localhost:8080/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
+
