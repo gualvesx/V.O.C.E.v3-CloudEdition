@@ -1,0 +1,4 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\SOFTWARE\Google\Chrome\NativeMessagingHosts\com.meutcc.monitor]
+@="C:\\Users\\49418787873\\Desktop\\V.O.C.E-main\\tcc_native_host\\host_manifest.json"

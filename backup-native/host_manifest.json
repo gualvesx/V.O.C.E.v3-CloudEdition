@@ -1,0 +1,9 @@
+{
+  "name": "com.meutcc.monitor",
+  "description": "Host nativo para o TCC de monitoramento",
+  "path": "C:\\Users\\49418787873\\Desktop\\V.O.C.E-main\\tcc_native_host\\run_host.bat",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://gibfcbaaebnfmomilkkiidahdnaeilme/"
+  ]
+}
